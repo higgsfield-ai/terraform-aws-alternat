@@ -1,5 +1,9 @@
 ## NAT instance configuration
 locals {
+  # Provider defaults do not reach launch-template tag_specifications. Match
+  # the ASG's existing precedence so instances and their children share ownership.
+  nat_resource_tags = merge(var.tags, data.aws_default_tags.current.tags)
+
   initial_lifecycle_hooks = [
     {
       name                    = "NATInstanceTerminationLifeCycleHook"
@@ -288,7 +292,7 @@ resource "aws_launch_template" "nat_instance_template" {
   tag_specifications {
     resource_type = "instance"
 
-    tags = merge(var.tags, {
+    tags = merge(local.nat_resource_tags, {
       alterNATInstance = "true",
     })
   }
@@ -296,9 +300,14 @@ resource "aws_launch_template" "nat_instance_template" {
   tag_specifications {
     resource_type = "volume"
 
-    tags = merge(var.tags, {
+    tags = merge(local.nat_resource_tags, {
       alterNATInstance = "true",
     })
+  }
+
+  tag_specifications {
+    resource_type = "network-interface"
+    tags          = local.nat_resource_tags
   }
   user_data = data.cloudinit_config.config[each.key].rendered
 }
