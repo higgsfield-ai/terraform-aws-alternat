@@ -45,6 +45,18 @@ Read on to learn more about alterNAT.
 
 ## Architecture Overview
 
+### Higgsfield fork: tags on instance-created resources
+
+Launch-template tag specifications apply the module tags and AWS provider default
+tags to instances, EBS volumes and network interfaces. Provider defaults take
+precedence, matching the existing Auto Scaling group tag behavior. The
+`alterNATInstance=true` marker is retained on instances and volumes.
+
+These settings apply when instances and their children are created. Updating the
+template does not retag existing children or request an instance refresh. Keep
+child lifecycle ownership with the Auto Scaling group; do not import its ephemeral
+volumes or interfaces as separately managed infrastructure just to change tags.
+
 ![Architecture diagram](/assets/architecture.png)
 
 The two main elements of the NAT instance solution are:
