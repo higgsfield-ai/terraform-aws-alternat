@@ -57,6 +57,29 @@ template does not retag existing children or request an instance refresh. Keep
 child lifecycle ownership with the Auto Scaling group; do not import its ephemeral
 volumes or interfaces as separately managed infrastructure just to change tags.
 
+### Higgsfield fork: security-group rule tags
+
+This fork requires Terraform 1.7 or later. CIDR permissions use one taggable
+resource per physical rule. The single-peer Lambda egress and security-group
+ingress rules retain their existing lifecycle and expose their computed IDs to
+individual `aws_ec2_tag` resources. Rule tags follow the security groups' normal
+precedence: explicit module tags override provider defaults.
+
+For an existing installation, the caller must import each current CIDR rule by
+its exact `sgr-*` ID when updating the pinned module revision. The module forgets
+the old multi-peer wrappers with `destroy = false`; it does not revoke their AWS
+permissions. Review a saved plan proving imports and tag updates only, with the
+same protocols, peers and descriptions. A plan that creates rules instead of
+importing existing ones is not a migration plan. Keep security groups, NAT
+instances, launch templates, Auto Scaling groups, routes and Lambda configuration
+unchanged. New installations create the same permissions with tags from the start.
+
+CIDR lists must contain unique values. Their positions identify the modern rules
+so computed CIDRs work on first creation; preserve their order during migration.
+Reordering a list changes rule-to-CIDR associations and needs a separate network
+change review. The retained single-peer rules and any caller-owned permissions
+must remain unchanged in the migration plan.
+
 ![Architecture diagram](/assets/architecture.png)
 
 The two main elements of the NAT instance solution are:
