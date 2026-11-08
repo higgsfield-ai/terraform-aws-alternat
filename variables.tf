@@ -83,12 +83,22 @@ variable "ingress_security_group_cidr_blocks" {
   description = "A list of CIDR blocks that are allowed by the NAT instance."
   type        = list(string)
   default     = []
+
+  validation {
+    condition     = length(var.ingress_security_group_cidr_blocks) == length(distinct(var.ingress_security_group_cidr_blocks))
+    error_message = "Ingress CIDR blocks must be unique; each list position owns one physical security-group rule."
+  }
 }
 
 variable "ingress_security_group_ipv6_cidr_blocks" {
   description = "A list of IPv6 CIDR blocks that are allowed by the NAT instance."
   type        = list(string)
   default     = []
+
+  validation {
+    condition     = length(var.ingress_security_group_ipv6_cidr_blocks) == length(distinct(var.ingress_security_group_ipv6_cidr_blocks))
+    error_message = "Ingress IPv6 CIDR blocks must be unique; each list position owns one physical security-group rule."
+  }
 }
 
 variable "lifecycle_heartbeat_timeout" {
